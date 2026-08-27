@@ -1,0 +1,16 @@
+{
+  "name": "nutrimap",
+  "version": "1.0.0",
+  "description": "Mapa saludable de CDMX",
+  "scripts": {
+    "start": "npx open-cli http://localhost:8080 && npx serve -l 8080 .",
+    "dev": "npx serve -l 8080 ."
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "open-cli": "^8.0.0",
+    "serve": "^14.2.0"
+  }
+}
