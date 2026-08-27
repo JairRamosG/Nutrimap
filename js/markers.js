@@ -306,6 +306,13 @@ function renderMarkers(map, elements, options = {}) {
     keyToEntries.set(entry.healthKey, list);
   }
 
+  // #16: recalcular el score por colonia cuando cambia el set de establecimientos.
+  // Solo lectura; no altera el data flow del render. El cómputo queda cacheado en
+  // colonia.js (no se re-escannea en render/search/filters).
+  if (typeof recomputeColoniaHealthScores === 'function') {
+    recomputeColoniaHealthScores();
+  }
+
   // Elementos sin punto resoluble: se descartan y se reportan (contar en esta pasada).
   if (droppedWithoutPoint > 0) {
     console.warn(`Se descartaron ${droppedWithoutPoint} establecimiento(s) sin punto resoluble (lat/lon o center).`);
