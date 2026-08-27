@@ -7,13 +7,15 @@ function createHeatLayer(map, points) {
   }
 
   heatLayer = L.heatLayer(points, {
-    radius: 25,
-    blur: 15,
+    radius: 40,
+    blur: 25,
     maxZoom: 17,
-    max: 1.0,
+    max: 0.8,
     gradient: {
       0.0: '#00ff00',
+      0.3: '#66ff00',
       0.5: '#ffff00',
+      0.7: '#ff8800',
       1.0: '#ff0000'
     }
   }).addTo(map);
