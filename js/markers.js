@@ -110,6 +110,15 @@ async function loadMarkers(map) {
         icon: createMarkerIcon(type, hsColor)
       }).bindPopup(popupContent);
 
+      marker.on('click', function () {
+        openNutritionPanel({
+          name: name,
+          type: getMarkerTypeName(type),
+          typeCode: type,
+          address: addr
+        });
+      });
+
       markersLayer.addLayer(marker);
       heatPoints.push([el.lat, el.lon, 0.5]);
     });

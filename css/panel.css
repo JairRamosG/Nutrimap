@@ -1,0 +1,277 @@
+/* ========================================
+   Panel de Información Nutricional
+   Mobile-first responsive design
+   ======================================== */
+
+/* Overlay de fondo */
+.panel-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.panel-overlay.active {
+  display: block;
+}
+
+/* Panel lateral */
+.nutrition-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  z-index: 1001;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.nutrition-panel.active {
+  right: 0;
+}
+
+/* Header del panel */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.btn-close:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+/* Contenido del panel */
+.panel-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Información básica */
+.panel-info {
+  margin-bottom: 20px;
+}
+
+.panel-info .establishment-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.panel-info .establishment-type {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}
+
+.panel-info .establishment-address {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Health Score Gauge */
+.health-score-section {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.health-gauge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.health-label {
+  display: block;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.health-product-count {
+  display: block;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* Tabla de nutrientes */
+.nutrients-section {
+  margin-bottom: 24px;
+}
+
+.nutrients-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px 0;
+}
+
+.nutrients-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.nutrients-table th,
+.nutrients-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nutrients-table th {
+  font-weight: 600;
+  color: #6b7280;
+  background: #f9fafb;
+}
+
+.nutrients-table td {
+  color: #1f2937;
+}
+
+.nutrients-table tr:last-child td {
+  border-bottom: none;
+}
+
+.nutrient-bar {
+  display: inline-block;
+  height: 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Sección de gráficas */
+.charts-section {
+  margin-bottom: 24px;
+}
+
+.charts-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px 0;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  max-height: 280px;
+}
+
+/* Loading state */
+.panel-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.panel-loading .spinner-large {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+.panel-loading p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Sin datos */
+.panel-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: #6b7280;
+}
+
+.panel-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ========================================
+   Desktop breakpoint (> 768px)
+   ======================================== */
+@media (min-width: 768px) {
+  .nutrition-panel {
+    width: 400px;
+    right: -400px;
+  }
+
+  .panel-overlay.active {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ========================================
+   Wide desktop breakpoint (> 1024px)
+   ======================================== */
+@media (min-width: 1024px) {
+  .nutrition-panel {
+    width: 420px;
+    right: -420px;
+  }
+}
