@@ -1,0 +1,407 @@
+/* ========================================
+   Sidebar de Filtros y Búsqueda
+   Mobile-first responsive design
+   ======================================== */
+
+/* Sidebar container */
+.filter-sidebar {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100%;
+  background: #ffffff;
+  z-index: 1003;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.filter-sidebar:not(.collapsed) {
+  left: 0;
+}
+
+.filter-sidebar.collapsed {
+  left: -320px;
+}
+
+/* Header */
+.filter-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+
+.filter-sidebar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.filter-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
+.filter-toggle-btn:hover {
+  background: #e5e7eb;
+}
+
+/* Body */
+.filter-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Sections */
+.filter-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+}
+
+.filter-section-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* Search input */
+.filter-search-wrapper {
+  position: relative;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+  border-color: #3b82f6;
+}
+
+.filter-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Suggestions */
+.colonia-suggestions {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.colonia-suggestion-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.colonia-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.colonia-suggestion-item:hover {
+  background: #f3f4f6;
+}
+
+/* Checkboxes */
+.filter-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  user-select: none;
+}
+
+.filter-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.filter-checkbox-mark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.filter-checkbox input[type="checkbox"]:checked + .filter-checkbox-mark {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.filter-checkbox input[type="checkbox"]:checked + .filter-checkbox-mark::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.filter-checkbox-label {
+  font-size: 14px;
+}
+
+/* Score buttons */
+.filter-score-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-score-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  transition: all 0.15s;
+}
+
+.filter-score-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.filter-score-btn.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.score-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Results section */
+.filter-results-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.filter-results-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.filter-clear-btn {
+  padding: 8px 12px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-clear-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Establishment list */
+.filter-establishment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.filter-establishment-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.filter-establishment-item:hover {
+  background: #f9fafb;
+}
+
+.filter-establishment-item.selected {
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+}
+
+.filter-establishment-item:last-child {
+  border-bottom: none;
+}
+
+.filter-est-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-est-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-est-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-est-type {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.filter-est-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.filter-empty-message {
+  padding: 24px 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* ========================================
+   Toggle button for mobile
+   ======================================== */
+.filter-sidebar-toggle-mobile {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 10px;
+  z-index: 1002;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================
+   Desktop breakpoint (> 768px)
+   ======================================== */
+@media (min-width: 768px) {
+  .filter-sidebar {
+    width: 320px;
+    left: 0;
+    top: 0;
+    height: 100%;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .filter-sidebar.collapsed {
+    left: -340px;
+  }
+
+  .filter-sidebar-toggle-mobile {
+    display: none;
+  }
+
+  .filter-establishment-list {
+    max-height: 50vh;
+  }
+}
+
+/* ========================================
+   Wide desktop breakpoint (> 1024px)
+   ======================================== */
+@media (min-width: 1024px) {
+  .filter-sidebar {
+    width: 340px;
+  }
+}

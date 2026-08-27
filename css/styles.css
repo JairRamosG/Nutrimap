@@ -15,6 +15,16 @@ html, body {
   height: 100%;
 }
 
+/* ========================================
+   Desktop: mapa se ajusta al sidebar
+   ======================================== */
+@media (min-width: 768px) {
+  #map {
+    margin-left: 320px;
+    width: calc(100% - 320px);
+  }
+}
+
 .custom-marker {
   background: none;
   border: none;

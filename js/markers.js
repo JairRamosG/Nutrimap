@@ -14,6 +14,7 @@ const OVERPASS_QUERY = `[out:json][timeout:30];area["name"="Ciudad de México"]-
 
 let markersCache = null;
 let markersLayerRef = null;
+let allEstablishments = [];
 
 function createMarkerIcon(type, healthColor, name, addr) {
   const color = healthColor || MARKER_COLORS[type] || '#6b7280';
@@ -77,6 +78,7 @@ async function loadMarkers(map) {
 function renderMarkers(map, data) {
   const markersLayer = L.layerGroup().addTo(map);
   markersLayerRef = markersLayer;
+  allEstablishments = [];
   const heatPoints = [];
 
   const markerPromises = data.elements.map(async (el) => {
@@ -86,12 +88,29 @@ function renderMarkers(map, data) {
       el.tags['addr:street'],
       el.tags['addr:housenumber']
     ].filter(Boolean).join(' ') || 'Sin dirección registrada';
+    const colonia = el.tags['addr:suburb'] || el.tags['addr:neighbourhood'] || '';
+    const postcode = el.tags['addr:postcode'] || '';
 
     const health = await getHealthForEstablishment(type);
 
     const hsLabel = health ? health.label : 'N/A';
     const hsColor = health ? getHealthScoreColor(health.label) : '#6b7280';
     const hsText = health ? `Health Score: ${health.label} (${health.productCount} productos)` : 'Health Score: N/A';
+
+    const establishmentData = {
+      id: el.id,
+      name: name,
+      type: type,
+      typeName: getMarkerTypeName(type),
+      address: addr,
+      colonia: colonia,
+      postcode: postcode,
+      lat: el.lat,
+      lng: el.lon,
+      healthLabel: hsLabel,
+      healthColor: hsColor,
+      marker: null
+    };
 
     const popupContent = `
       <div class="popup-content">
@@ -111,6 +130,8 @@ function renderMarkers(map, data) {
     const marker = L.marker([el.lat, el.lon], {
       icon: createMarkerIcon(type, hsColor, name, addr)
     }).bindPopup(popupContent);
+
+    establishmentData.marker = marker;
 
     marker.on('click', function () {
       openNutritionPanel({
@@ -137,6 +158,7 @@ function renderMarkers(map, data) {
     });
 
     markersLayer.addLayer(marker);
+    allEstablishments.push(establishmentData);
     heatPoints.push([el.lat, el.lon, 0.5]);
   });
 

@@ -14,5 +14,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 addHeatmapToggle(map);
 
 loadMarkers(map).then(function (layer) {
-  if (layer) initSearch(map, layer);
+  if (layer) {
+    initSearch(map, layer);
+    initFilters(map, layer);
+  }
 });
