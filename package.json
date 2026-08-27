@@ -4,7 +4,8 @@
   "description": "Mapa saludable de CDMX",
   "scripts": {
     "start": "npx open-cli http://localhost:8080 && npx serve -l 8080 .",
-    "dev": "npx serve -l 8080 ."
+    "dev": "npx serve -l 8080 .",
+    "build": "shx rm -rf dist && shx mkdir -p dist && shx cp index.html dist/ && shx cp -r css js data dist/ && shx mkdir -p dist/node_modules/leaflet/dist && shx cp node_modules/leaflet/dist/leaflet.js node_modules/leaflet/dist/leaflet.css dist/node_modules/leaflet/dist/ && shx mkdir -p dist/node_modules/leaflet.heat/dist && shx cp node_modules/leaflet.heat/dist/leaflet-heat.js dist/node_modules/leaflet.heat/dist/"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -12,6 +13,7 @@
   },
   "devDependencies": {
     "open-cli": "^8.0.0",
-    "serve": "^14.2.0"
+    "serve": "^14.2.0",
+    "shx": "^0.3.4"
   }
 }
