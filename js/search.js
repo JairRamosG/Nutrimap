@@ -219,6 +219,10 @@ function getMarkerTypeFromIcon(marker) {
   if (html.includes('🛒')) return 'supermarket';
   if (html.includes('🏪')) return 'grocery';
   if (html.includes('🏬')) return 'marketplace';
+  if (html.includes('🥤')) return 'convenience';
+  if (html.includes('🥬')) return 'greengrocer';
+  if (html.includes('🥖')) return 'bakery';
+  if (html.includes('🥩')) return 'butcher';
   return 'unknown';
 }
 
@@ -226,7 +230,11 @@ function typeMatchesQuery(type, query) {
   const typeNames = {
     supermarket: ['supermercado', 'supermarket', 'tienda'],
     grocery: ['tienda', 'abarrotes', 'grocery', 'mini'],
-    marketplace: ['mercado', 'marketplace', 'local']
+    marketplace: ['mercado', 'marketplace', 'local'],
+    convenience: ['conveniencia', 'convenience', 'oxxo', 'tienda'],
+    greengrocer: ['verdulería', 'verduleria', 'greengrocer', 'frutas', 'verdura'],
+    bakery: ['panadería', 'panaderia', 'bakery', 'pan'],
+    butcher: ['carnicería', 'carniceria', 'butcher', 'carne']
   };
   const names = typeNames[type] || [];
   return names.some(n => n.includes(query.toLowerCase()));
