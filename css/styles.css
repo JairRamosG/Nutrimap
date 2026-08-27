@@ -83,3 +83,30 @@ html, body {
 .error-icon {
   font-size: 14px;
 }
+
+.heatmap-toggle {
+  width: 36px !important;
+  height: 36px !important;
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 36px;
+  text-align: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.heatmap-toggle:hover {
+  background: #f3f4f6;
+}
+
+.heatmap-toggle.active {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+.heatmap-toggle.inactive {
+  background: #fef2f2;
+  border-color: #ef4444;
+}

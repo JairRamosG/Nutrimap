@@ -81,6 +81,7 @@ async function loadMarkers(map) {
     const data = await response.json();
 
     const markersLayer = L.layerGroup().addTo(map);
+    const heatPoints = [];
 
     data.elements.forEach((el) => {
       const type = getMarkerType(el.tags);
@@ -103,7 +104,10 @@ async function loadMarkers(map) {
       }).bindPopup(popupContent);
 
       markersLayer.addLayer(marker);
+      heatPoints.push([el.lat, el.lon, 0.5]);
     });
+
+    createHeatLayer(map, heatPoints);
 
     loadingControl.remove();
   } catch (err) {
