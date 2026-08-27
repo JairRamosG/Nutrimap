@@ -320,6 +320,6 @@ async function openNutritionPanel(establishment) {
     renderPanel(establishment, health, allProducts);
   } catch (err) {
     console.error('Error cargando datos nutricionales:', err);
-    renderPanel(establishment, null, []);
+    showPanelError('No encontramos información del producto. Intenta con otro establecimiento.');
   }
 }
