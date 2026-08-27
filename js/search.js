@@ -12,6 +12,11 @@ const SEARCH_CATEGORIES = [
 ];
 
 const SPANISH_TO_ENGLISH = {
+  'frutas frescas': 'fresh fruits',
+  'cereales integrales': 'whole wheat cereals',
+  'comida baja en calorias': 'low calorie food',
+  'baja en calorias': 'low calorie',
+  'integral': 'whole wheat',
   'frutas': 'fruits',
   'fruta': 'fruits',
   'lacteos': 'dairy',
@@ -29,13 +34,16 @@ const SPANISH_TO_ENGLISH = {
   'dulces': 'sweets',
   'comida': 'food',
   'saludable': 'healthy',
-  'baja en calorias': 'low-calorie',
-  'integral': 'whole-wheat'
+  'jugo': 'juice',
+  'ensalada': 'salad'
 };
 
 function translateQuery(query) {
-  const lower = query.toLowerCase().trim();
-  return SPANISH_TO_ENGLISH[lower] || lower;
+  const lower = query.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (SPANISH_TO_ENGLISH[lower]) return SPANISH_TO_ENGLISH[lower];
+  const words = lower.split(/\s+/);
+  const translated = words.map(word => SPANISH_TO_ENGLISH[word] || word).join(' ');
+  return translated;
 }
 
 let searchMarkersRef = null;
