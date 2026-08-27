@@ -223,7 +223,6 @@ function renderMarkers(map, elements, options = {}) {
   allEstablishments = [];
   lastElements = elements || [];
 
-  const heatPoints = [];
   const keyToEntries = new Map();
   let droppedWithoutPoint = 0;
 
@@ -299,7 +298,6 @@ function renderMarkers(map, elements, options = {}) {
     entry.marker = marker;
     layer.addLayer(marker);
     allEstablishments.push(entry);
-    heatPoints.push([point.lat, point.lng, 0.5]);
 
     const list = keyToEntries.get(entry.healthKey) || [];
     list.push(entry);
@@ -309,8 +307,16 @@ function renderMarkers(map, elements, options = {}) {
   // #16: recalcular el score por colonia cuando cambia el set de establecimientos.
   // Solo lectura; no altera el data flow del render. El cómputo queda cacheado en
   // colonia.js (no se re-escannea en render/search/filters).
+  // #17: el heatmap de SALUD se construye SOLO después de que el recompute
+  // resuelve (scores vivos), nunca antes ni con densidad cruda. No-op si no hay.
   if (typeof recomputeColoniaHealthScores === 'function') {
-    recomputeColoniaHealthScores();
+    recomputeColoniaHealthScores()
+      .then(function () {
+        if (typeof buildHealthHeat === 'function') buildHealthHeat(map);
+      })
+      .catch(function (err) {
+        console.warn('No se pudo construir el heatmap de salud por colonia:', err);
+      });
   }
 
   // Elementos sin punto resoluble: se descartan y se reportan (contar en esta pasada).
@@ -341,7 +347,6 @@ function renderMarkers(map, elements, options = {}) {
       entry.marker.setIcon(createMarkerIcon(entry.type, color, entry.name, entry.address));
     }
   })).then(() => {
-    createHeatLayer(map, heatPoints);
     if (!skipPreload) {
       preloadNutritionData();
     }

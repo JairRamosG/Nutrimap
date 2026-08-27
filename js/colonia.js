@@ -154,6 +154,10 @@ function buildColoniaScores(colonias, establishments) {
     return {
       name: c.name,
       alcaldia: c.alcaldia,
+      // Geometry del centroide: la consume el heatmap de salud (#17) para ubicar
+      // un punto por colonia. No recalcula scores ni re-fetch.
+      lat: c.lat,
+      lng: c.lng,
       score: r.score,
       sampleSize: r.sampleSize,
       lowConfidence: r.lowConfidence,
@@ -184,8 +188,8 @@ function expose() {
 }
 
 // Getter QA: devuelve el cacheado, o lo calcula bajo demanda. Insider:
-// window.NUTRIMAP.getColoniaHealthScores() → [{name, alcaldia, score, sampleSize,
-// lowConfidence, hasData}, ...].
+// window.NUTRIMAP.getColoniaHealthScores() → [{name, alcaldia, lat, lng, score,
+// sampleSize, lowConfidence, hasData}, ...].
 function getColoniaHealthScores() {
   if (coloniaScoresCache) return coloniaScoresCache;
   if (_coloniasData && Array.isArray(_coloniasData)) {
