@@ -1,17 +1,47 @@
 const MARKER_COLORS = {
   supermarket: '#3b82f6',
   grocery: '#f97316',
-  marketplace: '#22c55e'
+  marketplace: '#22c55e',
+  // Chatarra: rojo, claramente distinguible de los tipos frescos.
+  convenience: '#ef4444',
+  // Frescos: verdes/ámbar/rosa, ninguno comparte color con convenience.
+  greengrocer: '#84cc16',
+  bakery: '#f59e0b',
+  butcher: '#ec4899'
 };
 
 const MARKER_ICONS = {
   supermarket: '🛒',
   grocery: '🏪',
-  marketplace: '🏬'
+  marketplace: '🏬',
+  convenience: '🥤',
+  greengrocer: '🥬',
+  bakery: '🥖',
+  butcher: '🥩'
 };
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const OVERPASS_QUERY = `[out:json][timeout:30];area["name"="Ciudad de México"]->.cdmx;(node["shop"="supermarket"](area.cdmx);node["shop"="grocery"](area.cdmx);node["amenity"="marketplace"](area.cdmx););out body 200;`;
+// Una sola query ampliada (sin queries por colonia ni paginación):
+// - tipa los tipos frescos + chatarra además de los mixtos existentes.
+// - nwr cubre node/way/relation; `out center` provee un punto para todo
+//   elemento (nodos conservan lat/lon; ways/relations exponen center).
+// - dos `out` separados: convenience (masiva en CDMX) no compite con el
+//   presupuesto de los tipos pequeños, que quedan completos.
+const OVERPASS_QUERY = `[out:json][timeout:60];
+area["name"="Ciudad de México"]->.cdmx;
+(
+  nwr["shop"="supermarket"](area.cdmx);
+  nwr["shop"="grocery"](area.cdmx);
+  nwr["shop"="greengrocer"](area.cdmx);
+  nwr["shop"="bakery"](area.cdmx);
+  nwr["shop"="butcher"](area.cdmx);
+  nwr["amenity"="marketplace"](area.cdmx);
+);
+out center 1200;
+(
+  nwr["shop"="convenience"](area.cdmx);
+);
+out center 1200;`;
 
 let markersLayerRef = null;
 let allEstablishments = [];
@@ -35,6 +65,10 @@ function getMarkerType(tags) {
   if (tags.shop === 'supermarket') return 'supermarket';
   if (tags.shop === 'grocery') return 'grocery';
   if (tags.amenity === 'marketplace') return 'marketplace';
+  if (tags.shop === 'convenience') return 'convenience';
+  if (tags.shop === 'greengrocer') return 'greengrocer';
+  if (tags.shop === 'bakery') return 'bakery';
+  if (tags.shop === 'butcher') return 'butcher';
   return 'unknown';
 }
 
@@ -43,9 +77,75 @@ function getMarkerTypeName(type) {
     supermarket: 'Supermercado',
     grocery: 'Tienda de abarrotes',
     marketplace: 'Mercado',
+    convenience: 'Conveniencia',
+    greengrocer: 'Verdulería',
+    bakery: 'Panadería',
+    butcher: 'Carnicería',
     unknown: 'Otro'
   };
   return names[type] || type;
+}
+
+// Taxonomía de acceso a comida sana (alimenta #16). unknown -> mixed por defecto.
+const HEALTH_SLOT_BY_TYPE = {
+  supermarket: 'mixed',
+  grocery: 'mixed',
+  marketplace: 'mixed',
+  convenience: 'junk',
+  greengrocer: 'fresh',
+  bakery: 'fresh',
+  butcher: 'fresh'
+};
+
+function getHealthSlot(type) {
+  return HEALTH_SLOT_BY_TYPE[type] || 'mixed';
+}
+
+// Resuelve todo elemento (node/way/relation) a un punto {lat,lng}, o null.
+function getElementLatLon(el) {
+  if (el && typeof el.lat === 'number' && typeof el.lon === 'number') {
+    return { lat: el.lat, lng: el.lon };
+  }
+  if (el && el.center && typeof el.center.lat === 'number' && typeof el.center.lon === 'number') {
+    return { lat: el.center.lat, lng: el.center.lon };
+  }
+  return null;
+}
+
+// Haversine en km, para la métrica de cobertura por colonia (QA / #16).
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Métrica de cobertura por colonia (≥1 establecimiento a ~1km haversine).
+// Inspectable desde Consola para QA: `await computeColoniaCoverage()`.
+async function computeColoniaCoverage(radiusKm = 1) {
+  const res = await fetch('data/colonias.json');
+  const colonias = await res.json();
+  let covered = 0;
+  const perColonia = colonias.map(c => {
+    const count = allEstablishments.filter(e =>
+      haversineKm(c.lat, c.lng, e.lat, e.lng) <= radiusKm
+    ).length;
+    if (count >= 1) covered++;
+    return { colonia: c.name, alcaldia: c.alcaldia, establishments: count };
+  });
+  perColonia.sort((a, b) => b.establishments - a.establishments);
+  console.table(perColonia);
+  return {
+    totalColonias: colonias.length,
+    coveredColonias: covered,
+    coveredFraction: colonias.length ? covered / colonias.length : 0,
+    establishments: allEstablishments.length,
+    radiusKm
+  };
 }
 
 /* ---------- Persistencia en localStorage (TTL + version key) ---------- */
@@ -125,8 +225,14 @@ function renderMarkers(map, elements, options = {}) {
 
   const heatPoints = [];
   const keyToEntries = new Map();
+  let droppedWithoutPoint = 0;
 
   for (const el of (elements || [])) {
+    const point = getElementLatLon(el);
+    if (!point) {
+      droppedWithoutPoint++;
+      continue;
+    }
     const type = getMarkerType(el.tags);
     const brand = (el.tags.brand || '').trim() || null;
     const name = el.tags.name || 'Sin nombre';
@@ -142,11 +248,12 @@ function renderMarkers(map, elements, options = {}) {
       name: name,
       type: type,
       typeName: getMarkerTypeName(type),
+      slot: getHealthSlot(type),
       address: addr,
       colonia: colonia,
       postcode: postcode,
-      lat: el.lat,
-      lng: el.lon,
+      lat: point.lat,
+      lng: point.lng,
       brand: brand,
       healthKey: buildHealthKey(type, brand),
       // Estado inicial neutro/gris; nunca hereda color de una request anterior.
@@ -157,7 +264,7 @@ function renderMarkers(map, elements, options = {}) {
     };
 
     // Los marcadores se dibujan sin esperar la red.
-    const marker = L.marker([el.lat, el.lon], {
+    const marker = L.marker([point.lat, point.lng], {
       icon: createMarkerIcon(type, HEALTH_NA_COLOR, name, addr)
     }).bindPopup('');
 
@@ -192,12 +299,23 @@ function renderMarkers(map, elements, options = {}) {
     entry.marker = marker;
     layer.addLayer(marker);
     allEstablishments.push(entry);
-    heatPoints.push([el.lat, el.lon, 0.5]);
+    heatPoints.push([point.lat, point.lng, 0.5]);
 
     const list = keyToEntries.get(entry.healthKey) || [];
     list.push(entry);
     keyToEntries.set(entry.healthKey, list);
   }
+
+  // Elementos sin punto resoluble: se descartan y se reportan (contar en esta pasada).
+  if (droppedWithoutPoint > 0) {
+    console.warn(`Se descartaron ${droppedWithoutPoint} establecimiento(s) sin punto resoluble (lat/lon o center).`);
+  }
+
+  // Datos inspectables para QA con la métrica de cobertura por colonia (#16).
+  window.NUTRIMAP = window.NUTRIMAP || {};
+  window.NUTRIMAP.establishments = allEstablishments;
+  window.NUTRIMAP.getHealthSlot = getHealthSlot;
+  window.NUTRIMAP.computeColoniaCoverage = computeColoniaCoverage;
 
   // Health score diferido: una sola request por clave única (dedupe en api.js).
   const keys = Array.from(keyToEntries.keys());
