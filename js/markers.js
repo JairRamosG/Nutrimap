@@ -127,10 +127,25 @@ async function loadMarkers(map) {
 
     createHeatLayer(map, heatPoints);
 
+    preloadNutritionData();
+
     loadingControl.remove();
   } catch (err) {
     loadingControl.remove();
     errorControl = showError(map, 'No se pudieron cargar los establecimientos. Intentá de nuevo más tarde.');
     console.error('Error cargando establecimientos:', err);
+  }
+}
+
+async function preloadNutritionData() {
+  const categories = ['supermarkets', 'groceries', 'markets'];
+
+  for (const category of categories) {
+    try {
+      await searchProductsByCategory(category);
+      console.log(`Preloaded: ${category}`);
+    } catch (error) {
+      console.warn(`Failed to preload ${category}:`, error);
+    }
   }
 }
