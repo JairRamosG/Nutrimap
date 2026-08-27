@@ -12,8 +12,8 @@ const MARKER_ICONS = {
 
 const OVERPASS_QUERY = `[out:json];area["name"="Ciudad de México"]->.cdmx;(node["shop"="supermarket"](area.cdmx);node["shop"="grocery"](area.cdmx);node["amenity"="marketplace"](area.cdmx););out body;`;
 
-function createMarkerIcon(type) {
-  const color = MARKER_COLORS[type] || '#6b7280';
+function createMarkerIcon(type, healthColor) {
+  const color = healthColor || MARKER_COLORS[type] || '#6b7280';
   const icon = MARKER_ICONS[type] || '📍';
   return L.divIcon({
     className: 'custom-marker',
@@ -83,7 +83,7 @@ async function loadMarkers(map) {
     const markersLayer = L.layerGroup().addTo(map);
     const heatPoints = [];
 
-    data.elements.forEach((el) => {
+    const markerPromises = data.elements.map(async (el) => {
       const type = getMarkerType(el.tags);
       const name = el.tags.name || 'Sin nombre';
       const addr = [
@@ -91,21 +91,30 @@ async function loadMarkers(map) {
         el.tags['addr:housenumber']
       ].filter(Boolean).join(' ') || 'Sin dirección registrada';
 
+      const health = await getHealthForEstablishment(type);
+
+      const hsLabel = health ? health.label : 'N/A';
+      const hsColor = health ? getHealthScoreColor(health.label) : '#6b7280';
+      const hsText = health ? `Health Score: ${health.label} (${health.productCount} productos)` : 'Health Score: N/A';
+
       const popupContent = `
         <div class="popup-content">
           <div class="popup-type" style="color:${MARKER_COLORS[type]}">${getMarkerTypeName(type)}</div>
           <div class="popup-name">${name}</div>
           <div class="popup-address">${addr}</div>
+          <div class="popup-health"><strong>${hsText}</strong></div>
         </div>
       `;
 
       const marker = L.marker([el.lat, el.lon], {
-        icon: createMarkerIcon(type)
+        icon: createMarkerIcon(type, hsColor)
       }).bindPopup(popupContent);
 
       markersLayer.addLayer(marker);
       heatPoints.push([el.lat, el.lon, 0.5]);
     });
+
+    await Promise.all(markerPromises);
 
     createHeatLayer(map, heatPoints);
 
