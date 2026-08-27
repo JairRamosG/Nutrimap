@@ -10,14 +10,15 @@ const MARKER_ICONS = {
   marketplace: '🏬'
 };
 
+const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 const OVERPASS_QUERY = `[out:json][timeout:30];area["name"="Ciudad de México"]->.cdmx;(node["shop"="supermarket"](area.cdmx);node["shop"="grocery"](area.cdmx);node["amenity"="marketplace"](area.cdmx););out body 200;`;
 
-let markersCache = null;
 let markersLayerRef = null;
 let allEstablishments = [];
+let lastElements = [];
 
 function createMarkerIcon(type, healthColor, name, addr) {
-  const color = healthColor || MARKER_COLORS[type] || '#6b7280';
+  const color = healthColor || MARKER_COLORS[type] || HEALTH_NA_COLOR;
   const icon = MARKER_ICONS[type] || '📍';
   const safeName = (name || '').replace(/"/g, '&quot;');
   const safeAddr = (addr || '').replace(/"/g, '&quot;');
@@ -47,42 +48,87 @@ function getMarkerTypeName(type) {
   return names[type] || type;
 }
 
-async function loadMarkers(map) {
-  if (markersCache) {
-    renderMarkers(map, markersCache);
-    return markersLayerRef;
-  }
+/* ---------- Persistencia en localStorage (TTL + version key) ---------- */
 
+function writeEstablishmentsCache(record) {
   try {
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `data=${encodeURIComponent(OVERPASS_QUERY)}`
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    markersCache = data;
-
-    renderMarkers(map, data);
-
-    return markersLayerRef;
+    localStorage.setItem(CACHE_VERSION, JSON.stringify(record));
   } catch (err) {
-    console.error('Error cargando establecimientos:', err);
+    if (err && (err.name === 'QuotaExceededError' || err instanceof DOMException)) {
+      console.warn('Cache local lleno (quota). Continuando solo en memoria.', err);
+    } else {
+      console.warn('No se pudo persistir el caché local.', err);
+    }
   }
 }
 
-function renderMarkers(map, data) {
-  const markersLayer = L.layerGroup().addTo(map);
-  markersLayerRef = markersLayer;
-  allEstablishments = [];
-  const heatPoints = [];
+function readEstablishmentsCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_VERSION);
+    if (!raw) return null;
+    const record = JSON.parse(raw);
+    if (!record || record.version !== CACHE_VERSION) return null;
+    const age = Date.now() - (record.timestamp || 0);
+    if (age > CACHE_TTL_MS) return null; // expirado -> se invalida y refetchea
+    return record;
+  } catch (err) {
+    return null;
+  }
+}
 
-  const markerPromises = data.elements.map(async (el) => {
+function seedHealthMemo(memo) {
+  if (!memo) return;
+  for (const key of Object.keys(memo)) {
+    if (healthByKey[key] === undefined) healthByKey[key] = memo[key];
+  }
+}
+
+function persistCache() {
+  const record = {
+    version: CACHE_VERSION,
+    timestamp: Date.now(),
+    elements: lastElements,
+    healthMemo: Object.assign({}, healthByKey)
+  };
+  writeEstablishmentsCache(record);
+}
+
+/* ---------- Carga / revalidación ---------- */
+
+function buildPopupContent(entry) {
+  const healthText = entry.health
+    ? `Health Score: ${entry.health.label} (${entry.health.productCount} productos)`
+    : 'Health Score: N/A';
+  return `
+    <div class="popup-content">
+      <div class="popup-type" style="color:${MARKER_COLORS[entry.type]}">${entry.typeName}</div>
+      <div class="popup-name">${entry.name}</div>
+      <div class="popup-address">${entry.address}</div>
+      <div class="popup-health"><strong>${healthText}</strong></div>
+      <div class="popup-checkbox-row">
+        <input type="checkbox" class="popup-compare-checkbox"
+          data-name="${entry.name}" data-typecode="${entry.type}"
+          data-type="${entry.typeName}" data-address="${entry.address}">
+        <label class="popup-compare-label">Seleccionar para comparar</label>
+      </div>
+    </div>
+  `;
+}
+
+function renderMarkers(map, elements, options = {}) {
+  const skipPreload = !!options.skipPreload;
+  const layer = markersLayerRef || L.layerGroup().addTo(map);
+  markersLayerRef = layer;
+  layer.clearLayers();
+  allEstablishments = [];
+  lastElements = elements || [];
+
+  const heatPoints = [];
+  const keyToEntries = new Map();
+
+  for (const el of (elements || [])) {
     const type = getMarkerType(el.tags);
+    const brand = (el.tags.brand || '').trim() || null;
     const name = el.tags.name || 'Sin nombre';
     const addr = [
       el.tags['addr:street'],
@@ -91,13 +137,7 @@ function renderMarkers(map, data) {
     const colonia = el.tags['addr:suburb'] || el.tags['addr:neighbourhood'] || '';
     const postcode = el.tags['addr:postcode'] || '';
 
-    const health = await getHealthForEstablishment(type);
-
-    const hsLabel = health ? health.label : 'N/A';
-    const hsColor = health ? getHealthScoreColor(health.label) : '#6b7280';
-    const hsText = health ? `Health Score: ${health.label} (${health.productCount} productos)` : 'Health Score: N/A';
-
-    const establishmentData = {
+    const entry = {
       id: el.id,
       name: name,
       type: type,
@@ -107,31 +147,23 @@ function renderMarkers(map, data) {
       postcode: postcode,
       lat: el.lat,
       lng: el.lon,
-      healthLabel: hsLabel,
-      healthColor: hsColor,
+      brand: brand,
+      healthKey: buildHealthKey(type, brand),
+      // Estado inicial neutro/gris; nunca hereda color de una request anterior.
+      health: null,
+      healthLabel: 'N/A',
+      healthColor: HEALTH_NA_COLOR,
       marker: null
     };
 
-    const popupContent = `
-      <div class="popup-content">
-        <div class="popup-type" style="color:${MARKER_COLORS[type]}">${getMarkerTypeName(type)}</div>
-        <div class="popup-name">${name}</div>
-        <div class="popup-address">${addr}</div>
-        <div class="popup-health"><strong>${hsText}</strong></div>
-        <div class="popup-checkbox-row">
-          <input type="checkbox" class="popup-compare-checkbox"
-            data-name="${name}" data-typecode="${type}"
-            data-type="${getMarkerTypeName(type)}" data-address="${addr}">
-          <label class="popup-compare-label">Seleccionar para comparar</label>
-        </div>
-      </div>
-    `;
-
+    // Los marcadores se dibujan sin esperar la red.
     const marker = L.marker([el.lat, el.lon], {
-      icon: createMarkerIcon(type, hsColor, name, addr)
-    }).bindPopup(popupContent);
+      icon: createMarkerIcon(type, HEALTH_NA_COLOR, name, addr)
+    }).bindPopup('');
 
-    establishmentData.marker = marker;
+    marker.on('popupopen', function () {
+      marker.setPopupContent(buildPopupContent(entry));
+    });
 
     marker.on('click', function () {
       openNutritionPanel({
@@ -157,15 +189,83 @@ function renderMarkers(map, data) {
       }
     });
 
-    markersLayer.addLayer(marker);
-    allEstablishments.push(establishmentData);
+    entry.marker = marker;
+    layer.addLayer(marker);
+    allEstablishments.push(entry);
     heatPoints.push([el.lat, el.lon, 0.5]);
+
+    const list = keyToEntries.get(entry.healthKey) || [];
+    list.push(entry);
+    keyToEntries.set(entry.healthKey, list);
+  }
+
+  // Health score diferido: una sola request por clave única (dedupe en api.js).
+  const keys = Array.from(keyToEntries.keys());
+
+  Promise.all(keys.map(async (key) => {
+    const [type, brand] = key.split('::');
+    const health = await getHealthForEstablishment(type, brand);
+    const entries = keyToEntries.get(key);
+    const label = health ? health.label : 'N/A';
+    const color = getHealthScoreColor(label);
+
+    for (const entry of entries) {
+      entry.health = health;
+      entry.healthLabel = label;
+      entry.healthColor = color;
+      entry.marker.setIcon(createMarkerIcon(entry.type, color, entry.name, entry.address));
+    }
+  })).then(() => {
+    createHeatLayer(map, heatPoints);
+    if (!skipPreload) {
+      preloadNutritionData();
+    }
+    persistCache();
   });
 
-  Promise.all(markerPromises).then(() => {
-    createHeatLayer(map, heatPoints);
-    preloadNutritionData();
+  return layer;
+}
+
+async function fetchOverpassWithRetry() {
+  const data = await fetchJsonWithRetry(OVERPASS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `data=${encodeURIComponent(OVERPASS_QUERY)}`
   });
+  return data.elements || [];
+}
+
+async function loadMarkers(map) {
+  // 1) Caché válido: render inmediato + revalidación en background.
+  const cached = readEstablishmentsCache();
+  if (cached && cached.elements && cached.elements.length) {
+    seedHealthMemo(cached.healthMemo || {});
+    renderMarkers(map, cached.elements, { skipPreload: true });
+    revalidateInBackground(map);
+    return markersLayerRef;
+  }
+
+  // 2) Caché frío: fetch Overpass con retry/backoff, render y persistencia.
+  try {
+    const elements = await fetchOverpassWithRetry();
+    if (elements.length === 0) {
+      console.warn('Overpass devolvió 0 establecimientos.');
+    }
+    renderMarkers(map, elements);
+  } catch (err) {
+    console.error('Error cargando establecimientos:', err);
+  }
+
+  return markersLayerRef;
+}
+
+async function revalidateInBackground(map) {
+  try {
+    const elements = await fetchOverpassWithRetry();
+    renderMarkers(map, elements);
+  } catch (err) {
+    console.warn('Revalidación en background falló; se mantiene el caché.', err);
+  }
 }
 
 async function preloadNutritionData() {
