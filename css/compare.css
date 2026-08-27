@@ -1,0 +1,256 @@
+/* ========================================
+   Comparativa de Establecimientos
+   ======================================== */
+
+/* Sidebar de comparación */
+.compare-sidebar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  z-index: 1002;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 16px 16px 0 0;
+  transition: transform 0.3s ease;
+  transform: translateY(100%);
+}
+
+.compare-sidebar.active {
+  transform: translateY(0);
+}
+
+.compare-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 16px 16px 0 0;
+}
+
+.compare-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.compare-count {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.compare-list {
+  list-style: none;
+  padding: 8px 16px;
+  margin: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.compare-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+  color: #374151;
+}
+
+.compare-list li:last-child {
+  border-bottom: none;
+}
+
+.compare-item-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+
+.compare-item-remove {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.compare-item-remove:hover {
+  background: #fef2f2;
+}
+
+.compare-actions {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-compare {
+  flex: 1;
+  padding: 10px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-compare:hover {
+  background: #2563eb;
+}
+
+.btn-compare:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.btn-compare-clear {
+  padding: 10px 16px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-compare-clear:hover {
+  background: #e5e7eb;
+}
+
+/* Checkbox en el popup */
+.popup-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.popup-compare-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.popup-compare-label {
+  font-size: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Marcador seleccionado */
+.custom-marker.marker-selected .marker-circle {
+  box-shadow: 0 0 0 3px #3b82f6, 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ========================================
+   Panel de Comparativa (dentro del panel)
+   ======================================== */
+.comparison-section {
+  margin-bottom: 24px;
+}
+
+.comparison-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px 0;
+}
+
+.comparison-chart-container {
+  position: relative;
+  width: 100%;
+}
+
+.comparison-chart-container canvas {
+  width: 100% !important;
+  max-height: 320px;
+}
+
+.comparison-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.comparison-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comparison-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.comparison-legend-name {
+  color: #374151;
+  font-weight: 500;
+}
+
+.comparison-highlight-note {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.comparison-highlight-note strong {
+  color: #16a34a;
+}
+
+/* ========================================
+   Desktop breakpoint (> 768px)
+   ======================================== */
+@media (min-width: 768px) {
+  .compare-sidebar {
+    bottom: 16px;
+    left: 16px;
+    width: 340px;
+    border-radius: 12px;
+    transform: translateY(calc(100% + 16px));
+  }
+
+  .compare-sidebar.active {
+    transform: translateY(0);
+  }
+
+  .compare-header {
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+/* ========================================
+   Wide desktop breakpoint (> 1024px)
+   ======================================== */
+@media (min-width: 1024px) {
+  .compare-sidebar {
+    width: 380px;
+  }
+}

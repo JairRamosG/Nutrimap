@@ -14,12 +14,14 @@ const OVERPASS_QUERY = `[out:json][timeout:30];area["name"="Ciudad de México"]-
 
 let markersCache = null;
 
-function createMarkerIcon(type, healthColor) {
+function createMarkerIcon(type, healthColor, name, addr) {
   const color = healthColor || MARKER_COLORS[type] || '#6b7280';
   const icon = MARKER_ICONS[type] || '📍';
+  const safeName = (name || '').replace(/"/g, '&quot;');
+  const safeAddr = (addr || '').replace(/"/g, '&quot;');
   return L.divIcon({
     className: 'custom-marker',
-    html: `<div style="background:${color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-size:14px;">${icon}</div>`,
+    html: `<div class="marker-circle" style="background:${color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-size:14px;" data-est-name="${safeName}" data-est-address="${safeAddr}">${icon}</div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -16]
@@ -122,11 +124,17 @@ function renderMarkers(map, data) {
         <div class="popup-name">${name}</div>
         <div class="popup-address">${addr}</div>
         <div class="popup-health"><strong>${hsText}</strong></div>
+        <div class="popup-checkbox-row">
+          <input type="checkbox" class="popup-compare-checkbox"
+            data-name="${name}" data-typecode="${type}"
+            data-type="${getMarkerTypeName(type)}" data-address="${addr}">
+          <label class="popup-compare-label">Seleccionar para comparar</label>
+        </div>
       </div>
     `;
 
     const marker = L.marker([el.lat, el.lon], {
-      icon: createMarkerIcon(type, hsColor)
+      icon: createMarkerIcon(type, hsColor, name, addr)
     }).bindPopup(popupContent);
 
     marker.on('click', function () {
@@ -136,6 +144,21 @@ function renderMarkers(map, data) {
         typeCode: type,
         address: addr
       });
+    });
+
+    marker.on('popupopen', function () {
+      const checkbox = marker.getElement()?.querySelector('.popup-compare-checkbox');
+      if (checkbox) {
+        checkbox.addEventListener('change', function (e) {
+          e.stopPropagation();
+          toggleEstablishment({
+            name: name,
+            typeCode: type,
+            type: getMarkerTypeName(type),
+            address: addr
+          });
+        });
+      }
     });
 
     markersLayer.addLayer(marker);

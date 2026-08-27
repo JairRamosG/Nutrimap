@@ -54,6 +54,7 @@ function closePanel() {
 function destroyCharts() {
   if (activeChart) { activeChart.destroy(); activeChart = null; }
   if (activeRadarChart) { activeRadarChart.destroy(); activeRadarChart = null; }
+  if (typeof destroyCompareChart === 'function') destroyCompareChart();
 }
 
 /* ---------- Loading state ---------- */
