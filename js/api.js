@@ -167,7 +167,13 @@ async function getProductByBarcode(barcode) {
 const ESTABLISHMENT_CATEGORY_MAP = {
   supermarket: ['supermarket', 'frozen-foods', 'beverages'],
   grocery: ['grocery', 'snacks', 'dairy-products'],
-  marketplace: ['fresh-foods', 'fruits', 'vegetables']
+  marketplace: ['fresh-foods', 'fruits', 'vegetables'],
+  // Chatarra: convenience (Oxxo, tiendas 24h) no se puntúa como abarrotes.
+  convenience: ['snacks', 'beverages', 'sugars'],
+  // Frescos: cada tipo mapea a oferta fresca.
+  greengrocer: ['fresh-foods', 'fruits', 'vegetables'],
+  bakery: ['breads', 'cereals', 'fresh-foods'],
+  butcher: ['meat', 'fish', 'fresh-foods']
 };
 
 async function fetchBrandProducts(brand) {
