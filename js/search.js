@@ -11,6 +11,33 @@ const SEARCH_CATEGORIES = [
   'low-fat', 'low-sugar', 'high-protein', 'vegan', 'vegetarian'
 ];
 
+const SPANISH_TO_ENGLISH = {
+  'frutas': 'fruits',
+  'fruta': 'fruits',
+  'lacteos': 'dairy',
+  'leche': 'dairy',
+  'cereales': 'cereals',
+  'pan': 'bread',
+  'carnes': 'meat',
+  'carne': 'meat',
+  'pescado': 'fish',
+  'verduras': 'vegetables',
+  'verdura': 'vegetables',
+  'bebidas': 'beverages',
+  'jugos': 'juices',
+  'snacks': 'snacks',
+  'dulces': 'sweets',
+  'comida': 'food',
+  'saludable': 'healthy',
+  'baja en calorias': 'low-calorie',
+  'integral': 'whole-wheat'
+};
+
+function translateQuery(query) {
+  const lower = query.toLowerCase().trim();
+  return SPANISH_TO_ENGLISH[lower] || lower;
+}
+
 let searchMarkersRef = null;
 let searchMapRef = null;
 let searchOverlayActive = false;
@@ -120,7 +147,8 @@ async function executeSearch(query) {
   resultsDiv.style.display = 'none';
 
   try {
-    const products = await searchProductsByCategory(query, 30);
+    const translatedQuery = translateQuery(query);
+    const products = await searchProductsByCategory(translatedQuery, 30);
     filterMarkersBySearch(query, products);
 
     if (allMarkersData.length === 0) {
@@ -217,6 +245,10 @@ function showSearchResults(markersData, products) {
   sorted.forEach((item, i) => {
     const scoreLabel = item.score >= 0.7 ? 'A' : item.score >= 0.5 ? 'B' : item.score >= 0.35 ? 'C' : 'D';
     const scoreColor = getHealthScoreColor(scoreLabel);
+    const markerProducts = products.filter(p => {
+      const productName = (p.product_name || '').toLowerCase();
+      return productName.includes(item.name.toLowerCase().split(' ')[0]);
+    });
     html += `
       <div class="result-card" data-lat="${item.latLng.lat}" data-lng="${item.latLng.lng}">
         <span class="result-rank">#${i + 1}</span>
@@ -225,6 +257,15 @@ function showSearchResults(markersData, products) {
           <span class="result-address">${item.address}</span>
         </div>
         <span class="result-score" style="background:${scoreColor};">${scoreLabel}</span>
+      </div>
+      <div class="result-products">
+        <strong>Productos:</strong>
+        ${markerProducts.slice(0, 3).map(p => `
+          <div class="product-item">
+            <span>${p.product_name}</span>
+            <span class="product-score" style="color:${getHealthScoreColor(p.nutrition_grades)}">${p.nutrition_grades?.toUpperCase() || 'N/A'}</span>
+          </div>
+        `).join('')}
       </div>
     `;
   });
