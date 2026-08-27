@@ -18,35 +18,101 @@ HACKATON-TEMPLATE.md
 .atl/
 
 # ============================================
-#-node_modules (ya manejado por .opencode/.gitignore)
-# Si tu proyecto tiene node_modules propios, descomentar:
-# node_modules/
+# VARIABLES DE ENTorno — NUNCA commitear
+# ============================================
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# ============================================
+# ENTORNOS VIRTUALES Python
+# ============================================
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# ============================================
+# PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ============================================
+# NODE.JS
+# ============================================
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.npm/
+.yarn/
+.pnp.*
+
+# ============================================
+# Build output
+# ============================================
+dist/
+build/
+.cache/
+*.tsbuildinfo
+
+# ============================================
+# Docker (si generás imágenes locales)
+# ============================================
+docker-compose.override.yml
+
+# ============================================
+# IDEs y editores
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
 
 # ============================================
 # Archivos del sistema
 # ============================================
 .DS_Store
 Thumbs.db
-*.swp
-*.swo
-*~
-
-# ============================================
-# Build output (si aplica)
-# ============================================
-dist/
-build/
-.cache/
-
-# ============================================
-# Variables de entorno (NUNCA commitear)
-# ============================================
-.env
-.env.local
-.env.*.local
+ehthumbs.db
+Desktop.ini
+*.lnk
 
 # ============================================
 # Logs
 # ============================================
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ============================================
+# Archivos temporales
+# ============================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
