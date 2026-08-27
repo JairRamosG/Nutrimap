@@ -1,0 +1,52 @@
+# ============================================
+# AGENTES DE IA — Sistema de orquestación
+# ============================================
+# Estos archivos son para el sistema de agentes.
+# No forman parte del proyecto final para el hackaton.
+
+# Configuración principal de agentes
+AGENTS.md
+
+# Documentación del sistema de agentes
+_docs/
+HACKATON-TEMPLATE.md
+
+# Estructura de agentes de OpenCode
+.opencode/
+
+# Skill registry y cache
+.atl/
+
+# ============================================
+#-node_modules (ya manejado por .opencode/.gitignore)
+# Si tu proyecto tiene node_modules propios, descomentar:
+# node_modules/
+
+# ============================================
+# Archivos del sistema
+# ============================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ============================================
+# Build output (si aplica)
+# ============================================
+dist/
+build/
+.cache/
+
+# ============================================
+# Variables de entorno (NUNCA commitear)
+# ============================================
+.env
+.env.local
+.env.*.local
+
+# ============================================
+# Logs
+# ============================================
+*.log
+npm-debug.log*
