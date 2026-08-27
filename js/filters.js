@@ -7,7 +7,7 @@ let filterMapRef = null;
 let filterMarkersRef = null;
 let coloniasData = [];
 let activeFilters = {
-  types: { supermarket: true, grocery: true, marketplace: true },
+  types: { supermarket: true, grocery: true, marketplace: true, convenience: true, greengrocer: true, bakery: true, butcher: true },
   minScore: null,
   searchQuery: '',
   searchColonia: null
@@ -76,6 +76,26 @@ function createFilterSidebar() {
             <span class="filter-checkbox-mark"></span>
             <span class="filter-checkbox-label">🏬 Mercado</span>
           </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" id="filter-convenience" checked>
+            <span class="filter-checkbox-mark"></span>
+            <span class="filter-checkbox-label">🥤 Conveniencia</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" id="filter-greengrocer" checked>
+            <span class="filter-checkbox-mark"></span>
+            <span class="filter-checkbox-label">🥬 Verdulería</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" id="filter-bakery" checked>
+            <span class="filter-checkbox-mark"></span>
+            <span class="filter-checkbox-label">🥖 Panadería</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox" id="filter-butcher" checked>
+            <span class="filter-checkbox-mark"></span>
+            <span class="filter-checkbox-label">🥩 Carnicería</span>
+          </label>
         </div>
       </div>
 
@@ -141,6 +161,26 @@ function bindFilterEvents() {
 
   document.getElementById('filter-marketplace').addEventListener('change', function () {
     activeFilters.types.marketplace = this.checked;
+    applyFilters();
+  });
+
+  document.getElementById('filter-convenience').addEventListener('change', function () {
+    activeFilters.types.convenience = this.checked;
+    applyFilters();
+  });
+
+  document.getElementById('filter-greengrocer').addEventListener('change', function () {
+    activeFilters.types.greengrocer = this.checked;
+    applyFilters();
+  });
+
+  document.getElementById('filter-bakery').addEventListener('change', function () {
+    activeFilters.types.bakery = this.checked;
+    applyFilters();
+  });
+
+  document.getElementById('filter-butcher').addEventListener('change', function () {
+    activeFilters.types.butcher = this.checked;
     applyFilters();
   });
 
@@ -338,7 +378,7 @@ function updateEstablishmentList(establishments) {
 /* ---------- Clear Filters ---------- */
 
 function clearAllFilters() {
-  activeFilters.types = { supermarket: true, grocery: true, marketplace: true };
+  activeFilters.types = { supermarket: true, grocery: true, marketplace: true, convenience: true, greengrocer: true, bakery: true, butcher: true };
   activeFilters.minScore = null;
   activeFilters.searchQuery = '';
   activeFilters.searchColonia = null;
@@ -346,6 +386,10 @@ function clearAllFilters() {
   document.getElementById('filter-supermarket').checked = true;
   document.getElementById('filter-grocery').checked = true;
   document.getElementById('filter-marketplace').checked = true;
+  document.getElementById('filter-convenience').checked = true;
+  document.getElementById('filter-greengrocer').checked = true;
+  document.getElementById('filter-bakery').checked = true;
+  document.getElementById('filter-butcher').checked = true;
   document.getElementById('search-colonia').value = '';
 
   document.querySelectorAll('.filter-score-btn').forEach(btn => {
