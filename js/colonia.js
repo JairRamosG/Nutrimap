@@ -44,7 +44,7 @@ const COLONIA_LOW_CONFIDENCE_N = 3;
 // Valor de health por slot (ver comentario del header).
 const COLONIA_SLOT_VALUE = { fresh: 1, junk: 0, mixed: 0.5 };
 
-let coloniasData = null;
+let _coloniasData = null;
 let coloniasPromise = loadColonias();
 let coloniaScoresCache = null;
 
@@ -52,11 +52,11 @@ async function loadColonias() {
   try {
     const res = await fetch('data/colonias.json');
     const data = await res.json();
-    coloniasData = Array.isArray(data) ? data : [];
-    return coloniasData;
+    _coloniasData = Array.isArray(data) ? data : [];
+    return _coloniasData;
   } catch (err) {
     console.error('No se pudo cargar data/colonias.json:', err);
-    coloniasData = [];
+    _coloniasData = [];
     return [];
   }
 }
@@ -188,8 +188,8 @@ function expose() {
 // lowConfidence, hasData}, ...].
 function getColoniaHealthScores() {
   if (coloniaScoresCache) return coloniaScoresCache;
-  if (coloniasData && Array.isArray(coloniasData)) {
-    coloniaScoresCache = buildColoniaScores(coloniasData, getEstablishments());
+  if (_coloniasData && Array.isArray(_coloniasData)) {
+    coloniaScoresCache = buildColoniaScores(_coloniasData, getEstablishments());
     expose();
   }
   return coloniaScoresCache || [];
