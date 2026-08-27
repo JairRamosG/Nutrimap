@@ -10,26 +10,6 @@
   <link rel="stylesheet" href="css/compare.css">
 </head>
 <body>
-  <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
-
-  <aside id="sidebar" class="sidebar" aria-label="Panel de información">
-    <header class="sidebar-header">
-      <h1 class="sidebar-title">NutriMap</h1>
-    </header>
-    <div id="sidebar-content" class="sidebar-content">
-      <div id="sidebar-loading" class="sidebar-loading" style="display:none;">
-        <span class="spinner-large"></span>
-        <p>Cargando establecimientos…</p>
-      </div>
-      <div id="sidebar-error" class="sidebar-error" style="display:none;">
-        <span class="error-icon">⚠️</span>
-        <p id="sidebar-error-msg"></p>
-        <button id="sidebar-retry-btn" class="sidebar-retry-btn">Reintentar</button>
-      </div>
-      <div id="sidebar-list" class="sidebar-list"></div>
-    </div>
-  </aside>
-
   <div id="map"></div>
   <script src="node_modules/leaflet/dist/leaflet.js"></script>
   <script src="node_modules/leaflet.heat/dist/leaflet-heat.js"></script>

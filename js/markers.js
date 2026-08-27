@@ -46,36 +46,11 @@ function getMarkerTypeName(type) {
   return names[type] || type;
 }
 
-function showLoading(map) {
-  const loading = L.control({ position: 'topright' });
-  loading.onAdd = function () {
-    const div = L.DomUtil.create('div', 'loading-control');
-    div.innerHTML = '<span class="spinner"></span> Cargando establecimientos...';
-    return div;
-  };
-  loading.addTo(map);
-  return loading;
-}
-
-function showError(map, message) {
-  const error = L.control({ position: 'topright' });
-  error.onAdd = function () {
-    const div = L.DomUtil.create('div', 'error-control');
-    div.innerHTML = `<span class="error-icon">⚠️</span> ${message}`;
-    return div;
-  };
-  error.addTo(map);
-  return error;
-}
-
 async function loadMarkers(map) {
   if (markersCache) {
     renderMarkers(map, markersCache);
     return markersLayerRef;
   }
-  
-  const loadingControl = showLoading(map);
-  let errorControl = null;
 
   try {
     const response = await fetch('https://overpass-api.de/api/interpreter', {
@@ -93,11 +68,8 @@ async function loadMarkers(map) {
 
     renderMarkers(map, data);
 
-    loadingControl.remove();
     return markersLayerRef;
   } catch (err) {
-    loadingControl.remove();
-    errorControl = showError(map, 'No se pudieron cargar los establecimientos. Intentá de nuevo más tarde.');
     console.error('Error cargando establecimientos:', err);
   }
 }
