@@ -1,5 +1,8 @@
 const OFF_BASE_URL = 'https://world.openfoodfacts.org/api/v2';
 
+// Cache en memoria
+const nutritionCache = {};
+
 const NUTRI_SCORE_MAP = { a: 4, b: 3, c: 2, d: 1, e: 0 };
 
 function calculateHealthScore(products) {
@@ -36,24 +39,30 @@ function getHealthScoreColor(label) {
 }
 
 async function searchProductsByCategory(category, pageSize = 20) {
+  const cacheKey = `cat_${category}`;
+  if (nutritionCache[cacheKey]) return nutritionCache[cacheKey];
   try {
     const url = `${OFF_BASE_URL}/search?categories_tags_en=${encodeURIComponent(category)}&fields=product_name,nutrition_grades,nutriments&page_size=${pageSize}`;
     const res = await fetch(url);
     if (!res.ok) return [];
     const data = await res.json();
-    return data.products || [];
+    nutritionCache[cacheKey] = data.products || [];
+    return nutritionCache[cacheKey];
   } catch {
     return [];
   }
 }
 
 async function getProductByBarcode(barcode) {
+  const cacheKey = `bar_${barcode}`;
+  if (nutritionCache[cacheKey]) return nutritionCache[cacheKey];
   try {
     const url = `${OFF_BASE_URL}/product/${barcode}.json?fields=product_name,nutrition_grades,nutriments`;
     const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
-    return data.product || null;
+    nutritionCache[cacheKey] = data.product;
+    return nutritionCache[cacheKey];
   } catch {
     return null;
   }
