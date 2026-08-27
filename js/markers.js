@@ -13,6 +13,7 @@ const MARKER_ICONS = {
 const OVERPASS_QUERY = `[out:json][timeout:30];area["name"="Ciudad de México"]->.cdmx;(node["shop"="supermarket"](area.cdmx);node["shop"="grocery"](area.cdmx);node["amenity"="marketplace"](area.cdmx););out body 200;`;
 
 let markersCache = null;
+let markersLayerRef = null;
 
 function createMarkerIcon(type, healthColor, name, addr) {
   const color = healthColor || MARKER_COLORS[type] || '#6b7280';
@@ -70,7 +71,7 @@ function showError(map, message) {
 async function loadMarkers(map) {
   if (markersCache) {
     renderMarkers(map, markersCache);
-    return;
+    return markersLayerRef;
   }
   
   const loadingControl = showLoading(map);
@@ -93,6 +94,7 @@ async function loadMarkers(map) {
     renderMarkers(map, data);
 
     loadingControl.remove();
+    return markersLayerRef;
   } catch (err) {
     loadingControl.remove();
     errorControl = showError(map, 'No se pudieron cargar los establecimientos. Intentá de nuevo más tarde.');
@@ -102,6 +104,7 @@ async function loadMarkers(map) {
 
 function renderMarkers(map, data) {
   const markersLayer = L.layerGroup().addTo(map);
+  markersLayerRef = markersLayer;
   const heatPoints = [];
 
   const markerPromises = data.elements.map(async (el) => {

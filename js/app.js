@@ -6,4 +6,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 addHeatmapToggle(map);
-loadMarkers(map);
+loadMarkers(map).then((layer) => {
+  if (layer) initSearch(map, layer);
+});
