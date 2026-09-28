@@ -10,7 +10,7 @@ Mapa saludable de la CDMX. Para descubrír dónde comer sano: visualizá estable
 - Panel de información nutricional y gráficas de Chart.js con datos reales.
 - Buscador inteligente, filtros en tiempo real y diseño mobile-first.
 
-## Stack
+## Stack. 
 
 - HTML5 + CSS3 + JavaScript vanilla.
 - Leaflet.js + Leaflet.heat (mapas y zonas de calor).
