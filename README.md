@@ -12,7 +12,7 @@ Mapa saludable de la CDMX. Para descubrír dónde comer sano: visualizá estable
 
 ## Stack. 
 
-- HTML5 + CSS3 + JavaScript vanilla.
+- HTML5 + CSS3 + JavaScript Vanilla.
 - Leaflet.js + Leaflet.heat (mapas y zonas de calor).
 - Chart.js (gráficas, vía CDN).
 - OpenStreetMap (Overpass API) + Open Food Facts API.
