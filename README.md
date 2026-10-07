@@ -18,7 +18,7 @@ Mapa saludable de la CDMX. Para descubrír dónde comer sano: visualizá estable
 - OpenStreetMap (Overpass API) + Open Food Facts API.
 - Docker multi-stage (build → nginx) y deploy con GitHub Actions → GitHub Pages.
 
-## Cómo ejecutarlo
+## Cómo ejecutarlo-
 
 ```bash
 npm install
