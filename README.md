@@ -1,4 +1,4 @@
-#.NutriMap. 
+#.NutriMap
 
 Mapa saludable de la CDMX. Para descubrír dónde comer sano: visualizá establecimientos, zonas de calor y el acceso a comida sana por colonia.
 
